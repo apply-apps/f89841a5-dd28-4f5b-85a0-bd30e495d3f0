@@ -2,8 +2,9 @@
 // Combined code from all files
 
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Button, Alert, Dimensions } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Button, Alert, Dimensions, TouchableOpacity } from 'react-native';
 
+// SnakeGame.js
 const { width, height } = Dimensions.get('window');
 const CELL_SIZE = 20;
 const CELL_COUNT_X = Math.floor(width / CELL_SIZE);
@@ -32,7 +33,6 @@ const SnakeGame = () => {
     const [intervalId, setIntervalId] = useState(null);
 
     const changeDirection = (newDirection) => {
-        // Prevent reverse direction
         if (
             (direction === 'UP' && newDirection === 'DOWN') ||
             (direction === 'DOWN' && newDirection === 'UP') ||
@@ -61,7 +61,6 @@ const SnakeGame = () => {
                 setFood(randomFood(newSnake));
             }
 
-            // Check for collision
             if (
                 newHead.x < 0 || newHead.x >= CELL_COUNT_X ||
                 newHead.y < 0 || newHead.y >= CELL_COUNT_Y ||
@@ -99,20 +98,9 @@ const SnakeGame = () => {
         };
     }, [intervalId]);
 
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            switch (e.key) {
-                case 'ArrowUp': changeDirection('UP'); break;
-                case 'ArrowDown': changeDirection('DOWN'); break;
-                case 'ArrowLeft': changeDirection('LEFT'); break;
-                case 'ArrowRight': changeDirection('RIGHT'); break;
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [direction]);
+    const handleSwipe = (direction) => {
+        changeDirection(direction);
+    };
 
     return (
         <View style={styles.gameContainer}>
@@ -133,15 +121,36 @@ const SnakeGame = () => {
                 ))}
             </View>
             {playing ? (
-                <Button onPress={stopGame} title="Stop Game" />
+              <Button onPress={stopGame} title="Stop Game" />
             ) : (
-                <Button onPress={startGame} title="Start Game" />
+              <Button onPress={startGame} title="Start Game" />
             )}
+            <View style={styles.controls}>
+                <TouchableOpacity onPress={() => handleSwipe('UP')} style={styles.controlButton}><Text>↑</Text></TouchableOpacity>
+                <View style={styles.horizontalControls}>
+                    <TouchableOpacity onPress={() => handleSwipe('LEFT')} style={styles.controlButton}><Text>←</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleSwipe('RIGHT')} style={styles.controlButton}><Text>→</Text></TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={() => handleSwipe('DOWN')} style={styles.controlButton}><Text>↓</Text></TouchableOpacity>
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+        backgroundColor: '#f8f8f8',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginVertical: 20,
+    },
     gameContainer: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -158,31 +167,27 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
     },
+    controls: {
+        marginTop: 20,
+        alignItems: 'center',
+    },
+    horizontalControls: {
+        flexDirection: 'row',
+    },
+    controlButton: {
+        padding: 10,
+        backgroundColor: '#ddd',
+        margin: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });
 
-function App() {
+export default function App() {
     return (
-        <SafeAreaView style={appStyles.container}>
-            <Text style={appStyles.title}>Snake Game</Text>
+        <SafeAreaView style={styles.container}>
+            <Text style={styles.title}>Snake Game</Text>
             <SnakeGame />
         </SafeAreaView>
     );
 }
-
-const appStyles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20,
-        backgroundColor: '#f8f8f8',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginVertical: 20,
-    },
-});
-
-export default App;
